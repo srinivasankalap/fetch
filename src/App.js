@@ -13,22 +13,23 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://swapi.dev/api/films/');
+      const response = await fetch('https://react-ac14e-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json');
       if (!response.ok) {
         throw new Error('Something went wrong!');
       }
 
       const data = await response.json();
 
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        };
-      });
-      setMovies(transformedMovies);
+      const loadedMovies=[];
+      for (const key in data){
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releaseDate: data[key].releaseDate,
+        })
+      }
+      setMovies(loadedMovies);
     } catch (error) {
       setError(error.message);
     }
@@ -39,14 +40,36 @@ function App() {
     fetchMoviesHandler();
   }, [fetchMoviesHandler]);
 
-  function addMovieHandler(movie) {
-    console.log(movie);
+  async function addMovieHandler(movie) {
+    const response=await fetch('https://react-ac14e-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json',{
+      method: 'POST',
+      body: JSON.stringify(movie),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    const data=await response.json();
+    console.log(data);
+
+  }
+  async function deleteMovieHandler(movieId) {
+    try {
+      const response = await fetch(`https://react-ac14e-default-rtdb.asia-southeast1.firebasedatabase.app/movies/${movieId}.json`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete movie.');
+      }
+      setMovies((prevMovies) => prevMovies.filter((movie) => movie.id !== movieId));
+    } catch (error) {
+      setError(error.message);
+    }
   }
 
   let content = <p>Found no movies.</p>;
 
   if (movies.length > 0) {
-    content = <MoviesList movies={movies} />;
+    content = <MoviesList movies={movies} onDeleteMovie={deleteMovieHandler} />;
   }
 
   if (error) {

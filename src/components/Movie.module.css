@@ -18,3 +18,11 @@
   margin: 0;
   font-size: 1rem;
 }
+
+.movie button{
+  background-color: red;
+}
+
+.movie button:hover{
+  background-color: rgba(255, 0, 0, 0.547);
+}
